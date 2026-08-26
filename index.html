@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#030712">
+    <title>SOLUS | Dev Services</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Consolas, Monaco, sans-serif;
+            background:
+                radial-gradient(circle at top left, #451a03, transparent 40%),
+                radial-gradient(circle at bottom right, #0f172a, transparent 40%),
+                #030712;
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(17, 24, 39, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, #facc15, #eab308);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .topbar nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .topbar nav a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .topbar nav a:hover, .topbar nav a.active {
+            color: #facc15;
+        }
+
+        /* Botão de Instalação */
+        .btn-install {
+            display: none;
+            background: linear-gradient(90deg, #facc15, #ca8a04);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .btn-install:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.4);
+        }
+
+        /* Controle de Páginas (SPA) */
+        .page {
+            display: none;
+            max-width: 1200px;
+            margin: auto;
+            padding: 40px 20px;
+            animation: aparecer 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tag {
+            color: #fde047;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            max-width: 850px;
+            margin: 15px 0;
+            line-height: 1.1;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #facc15, #eab308);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            color: #9ca3af;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        /* Cards e Grid */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 25px;
+        }
+
+        .service-card {
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .service-card .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .service-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #f9fafb;
+        }
+
+        .service-card p {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .service-card .rating {
+            color: #facc15;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: #facc15;
+            box-shadow: 0 10px 30px rgba(250, 204, 21, 0.2);
+        }
+
+        /* Login & Forms */
+        .login-container {
+            min-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 40px rgba(250, 204, 21, 0.15);
+            margin: auto;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d1d5db;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #facc15;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
+        }
+
+        .btn-primary {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #facc15, #ca8a04);
+            color: #000;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(250, 204, 21, 0.3);
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .topbar { flex-direction: column; gap: 15px; }
+            .topbar nav { gap: 10px; flex-wrap: wrap; justify-content: center; }
+            .hero h1 { font-size: 34px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="logo" onclick="navegarPara('home')">&lt;SOLUS/&gt;</div>
+        <nav>
+            <a onclick="navegarPara('home')" id="nav-home" class="active">Início</a>
+            <a onclick="navegarPara('servicos')" id="nav-servicos">Devs</a>
+            <a onclick="navegarPara('perfil')" id="nav-perfil">Perfil</a>
+            <a onclick="navegarPara('login')" id="nav-login">Login</a>
+            <button id="btn-install-nav" class="btn-install" onclick="instalarPWA()">📲 INSTALAR APP</button>
+        </nav>
+    </header>
+
+    <!-- TELA HOME -->
+    <main id="page-home" class="page active">
+        <section class="hero">
+            <div>
+                <span class="tag">DESENVOLVIMENTO & TECNOLOGIA</span>
+                <h1>Encontre o programador <span>ideal.</span></h1>
+                <p>Contrate especialistas em Front-end, Back-end, Mobile e Inteligência Artificial.</p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn-primary" style="max-width: 250px;" onclick="navegarPara('servicos')">EXPLORAR DEVS</button>
+                    <button id="btn-install-hero" class="btn-install" style="padding: 14px 24px; font-size: 14px; border-radius: 12px;" onclick="instalarPWA()">📲 INSTALAR O APP SOLUS</button>
+                </div>
+            </div>
+        </section>
+
+        <section style="margin-top: 40px;">
+            <h2>Especialidades em Destaque</h2>
+            <div class="service-grid">
+                <div class="service-card">
+                    <div class="icon">🌐</div>
+                    <h3>Front-End</h3>
+                    <p>Criação de sites modernos, PWAs e interfaces dinâmicas com React e Vue.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon">⚙️</div>
+                    <h3>Back-End & APIs</h3>
+                    <p>Desenvolvimento de arquiteturas robustas em Node.js, Python e Java.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon">📱</div>
+                    <h3>Mobile Apps</h3>
+                    <p>Aplicativos nativos e híbridos para iOS e Android usando React Native e Flutter.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- TELA DEVS (LISTA) -->
+    <main id="page-servicos" class="page">
+        <h1>Desenvolvedores Disponíveis</h1>
+        <p style="color: #9ca3af; margin-bottom: 30px;">Selecione um profissional para visualizar o perfil e contratar.</p>
+        <div class="service-grid" id="lista-devs"></div>
+    </main>
+
+    <!-- TELA DETALHES -->
+    <main id="page-detalhes" class="page">
+        <section class="login-card" style="max-width: 600px;">
+            <div id="detalhes-icon" style="font-size: 50px; text-align: center;">💻</div>
+            <h1 id="detalhes-nome" style="text-align: center; margin: 10px 0;">Nome do Dev</h1>
+            <p id="detalhes-rating" style="text-align: center; color: #facc15; font-weight: bold;">⭐ 5.0</p>
+            <p id="detalhes-cargo" style="text-align: center; color: #9ca3af; margin-bottom: 25px;">Especialidade</p>
+
+            <div style="background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-bottom: 10px; color: #facc15;">Habilidades Técnicas:</h3>
+                <ul id="detalhes-skills" style="list-style: none; color: #d1d5db; line-height: 1.8;"></ul>
+            </div>
+
+            <button class="btn-primary" onclick="solicitarOrcamento()">SOLICITAR ORÇAMENTO</button>
+            <button class="btn-primary" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); margin-top: 10px;" onclick="navegarPara('servicos')">VOLTAR</button>
+        </section>
+    </main>
+
+    <!-- TELA LOGIN -->
+    <main id="page-login" class="page">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="logo" style="text-align: center;">&lt;SOLUS/&gt;</div>
+                <p style="text-align: center; color: #9ca3af; margin: 8px 0 30px;">Conectando você aos melhores devs.</p>
+
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" placeholder="dev@soluscode.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="senha">Senha</label>
+                        <input type="password" id="senha" placeholder="Digite sua senha" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">ENTRAR NO SYSTEM</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- TELA PERFIL -->
+    <main id="page-perfil" class="page">
+        <section class="login-card">
+            <h1>Perfil do Usuário</h1>
+            <br>
+            <p style="color: #9ca3af;">Usuário autenticado:</p>
+            <h2 id="usuario-email" style="color: #facc15; margin: 10px 0 25px;">Desconectado</h2>
+
+            <button class="btn-primary" id="btn-logout" onclick="fazerLogout()">LOGOUT</button>
+        </section>
+    </main>
+
+    <script>
+        const desenvolvedores = [
+            {
+                id: 1,
+                nome: "Lucas Silva",
+                cargo: "Full-Stack / PWA Specialist",
+                icon: "💻",
+                rating: "⭐ 4.9 (62 avaliações)",
+                skills: ["🚀 HTML5, CSS3 Avançado & PWA", "⚡ JavaScript ES6+, Service Workers", "⚛️ React & Tailwind CSS", "📦 Git & CI/CD"]
+            },
+            {
+                id: 2,
+                nome: "Backend Forge",
+                cargo: "Engenheiro de Software Node.js",
+                icon: "⚡",
+                rating: "⭐ 4.8 (41 avaliações)",
+                skills: ["🛠️ APIs RESTful & GraphQL", "🗄️ PostgreSQL, MongoDB & Redis", "🔒 Autenticação JWT & OAuth2", "☁️ Docker & AWS"]
+            },
+            {
+                id: 3,
+                nome: "Mobile Craft",
+                cargo: "Desenvolvedor Flutter & iOS",
+                icon: "📱",
+                rating: "⭐ 5.0 (89 avaliações)",
+                skills: ["📱 App Development (Flutter/Dart)", "🎨 Material Design & Cupertino", "🔔 Push Notifications & Firebase", "📲 Publicação na App Store/Play Store"]
+            },
+            {
+                id: 4,
+                nome: "Ana Python Lab",
+                cargo: "Cientista de Dados & Automações",
+                icon: "🐍",
+                rating: "⭐ 4.7 (35 avaliações)",
+                skills: ["🤖 Automações com Selenium & BeautifulSoup", "📊 Análise de Dados com Pandas/NumPy", "🧠 Machine Learning em Scikit-Learn", "⚡ FastAPIs & Django"]
+            },
+            {
+                id: 5,
+                nome: "Cyber Guard",
+                cargo: "DevSecOps & Pentester",
+                icon: "🛡️",
+                rating: "⭐ 4.9 (53 avaliações)",
+                skills: ["🔐 Auditoria de Código & Hacking Ético", "🛡️ Proteção contra OWASP Top 10", "⚙️ Configuração de Firewalls & SSL", "📦 CI/CD Seguro"]
+            },
+            {
+                id: 6,
+                nome: "UI/UX Code Studio",
+                cargo: "Design System & Web Animation",
+                icon: "🎨",
+                rating: "⭐ 4.8 (77 avaliações)",
+                skills: ["✨ Glassmorphism & Efeitos Neon", "🎞️ Animações GSAP & CSS3", "🎨 Design System no Figma", "📱 Layouts Responsivos"]
+            }
+        ];
+
+        function navegarPara(paginaId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.topbar nav a').forEach(nav => nav.classList.remove('active'));
+
+            const paginaAlvo = document.getElementById(`page-${paginaId}`);
+            if (paginaAlvo) paginaAlvo.classList.add('active');
+
+            const navAlvo = document.getElementById(`nav-${paginaId}`);
+            if (navAlvo) navAlvo.classList.add('active');
+
+            atualizarPerfilUI();
+        }
+
+        function renderizarDevs() {
+            const container = document.getElementById('lista-devs');
+            container.innerHTML = desenvolvedores.map(dev => `
+                <div class="service-card">
+                    <div class="icon">${dev.icon}</div>
+                    <h3>${dev.nome}</h3>
+                    <p>${dev.cargo}</p>
+                    <p class="rating">${dev.rating}</p>
+                    <button class="btn-primary" onclick="verDetalhes(${dev.id})">Ver Perfil Dev</button>
+                </div>
+            `).join('');
+        }
+
+        function verDetalhes(id) {
+            const dev = desenvolvedores.find(d => d.id === id);
+            if (!dev) return;
+
+            document.getElementById('detalhes-icon').textContent = dev.icon;
+            document.getElementById('detalhes-nome').textContent = dev.nome;
+            document.getElementById('detalhes-rating').textContent = dev.rating;
+            document.getElementById('detalhes-cargo').textContent = dev.cargo;
+            
+            const skillsList = document.getElementById('detalhes-skills');
+            skillsList.innerHTML = dev.skills.map(s => `<li>${s}</li>`).join('');
+
+            navegarPara('detalhes');
+        }
+
+        function solicitarOrcamento() {
+            alert("Solicitação enviada com sucesso! O desenvolvedor responderá via e-mail.");
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            if (email && senha) {
+                localStorage.setItem('usuarioLogado', email);
+                alert("Login efetuado com sucesso!");
+                navegarPara('perfil');
+            }
+        });
+
+        function fazerLogout() {
+            localStorage.removeItem('usuarioLogado');
+            atualizarPerfilUI();
+            navegarPara('login');
+        }
+
+        function atualizarPerfilUI() {
+            const usuario = localStorage.getItem('usuarioLogado');
+            const userDisplay = document.getElementById('usuario-email');
+            const navLogin = document.getElementById('nav-login');
+
+            if (usuario) {
+                userDisplay.textContent = usuario;
+                if(navLogin) navLogin.style.display = 'none';
+            } else {
+                userDisplay.textContent = 'Desconectado';
+                if(navLogin) navLogin.style.display = 'inline';
+            }
+        }
+
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            document.getElementById('btn-install-nav').style.display = 'block';
+            document.getElementById('btn-install-hero').style.display = 'block';
+        });
+
+        function instalarPWA() {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação.');
+                }
+                deferredPrompt = null;
+                document.getElementById('btn-install-nav').style.display = 'none';
+                document.getElementById('btn-install-hero').style.display = 'none';
+            });
+        }
+
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("service-worker.js")
+                    .catch(err => console.log("Erro no SW:", err));
+            });
+        }
+
+        renderizarDevs();
+        atualizarPerfilUI();
+    </script>
+</body>
+</html>
